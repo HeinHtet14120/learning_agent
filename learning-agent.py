@@ -140,8 +140,6 @@ class LearningAgent:
         print(f"\n✅ Found {len(repos)} repositories\n")
         return repos
     
-    def get_git_activity(self, since_hours=24):
-        """Get git commits and changes from the last N hours"""
     def get_git_activity(self, since_hours=24, repo_path=None):
         """Get git commits and changes from the last N hours"""
         since_time = datetime.now() - timedelta(hours=since_hours)
@@ -157,19 +155,30 @@ class LearningAgent:
             "repo_name": os.path.basename(repo_path)
         }
         
-        # Store current directory
-        original_dir = os.getcwd()
-        
         try:
-            # Change to repo directory
-            os.chdir(repo_path)
-            
-            # Get commits
+            # Get current git user name for filtering
+            git_user = ""
+            try:
+                user_result = subprocess.run(
+                    ["git", "config", "user.name"],
+                    capture_output=True, text=True, check=True,
+                    cwd=repo_path
+                )
+                git_user = user_result.stdout.strip()
+            except subprocess.CalledProcessError:
+                pass
+
+            # Get commits (filtered to current user only)
+            cmd = ["git", "log", f"--since={since_str}", "--pretty=format:%H|%an|%ad|%s", "--date=iso"]
+            if git_user:
+                cmd.append(f"--author={git_user}")
+
             result = subprocess.run(
-                ["git", "log", f"--since={since_str}", "--pretty=format:%H|%an|%ad|%s", "--date=iso"],
+                cmd,
                 capture_output=True,
                 text=True,
-                check=True
+                check=True,
+                cwd=repo_path
             )
             
             if result.stdout:
@@ -190,7 +199,8 @@ class LearningAgent:
                     ["git", "diff", "--stat", f"{latest_hash}^", latest_hash],
                     capture_output=True,
                     text=True,
-                    check=True
+                    check=True,
+                    cwd=repo_path
                 )
                 activity["files_changed"] = result.stdout
             
@@ -199,16 +209,14 @@ class LearningAgent:
                 ["git", "branch", "--show-current"],
                 capture_output=True,
                 text=True,
-                check=True
+                check=True,
+                cwd=repo_path
             )
             activity["branch"] = result.stdout.strip()
-            
+
         except subprocess.CalledProcessError as e:
             print(f"⚠️  Git error in {repo_path}: {e}")
             return None
-        finally:
-            # Restore original directory
-            os.chdir(original_dir)
         
         return activity
     
@@ -244,8 +252,8 @@ class LearningAgent:
     def detect_language(self, activity):
         """Detect primary programming language from file changes"""
         extensions = {
-            '.jsx': 'React Native',
-            '.tsx': 'React Native',
+            '.jsx': 'JavaScript',
+            '.tsx': 'TypeScript',
             '.js': 'JavaScript',
             '.ts': 'TypeScript',
             '.py': 'Python',
@@ -721,7 +729,14 @@ Examples:
         if "--hours" in sys.argv:
             idx = sys.argv.index("--hours")
             if idx + 1 < len(sys.argv):
-                hours = int(sys.argv[idx + 1])
+                try:
+                    hours = int(sys.argv[idx + 1])
+                    if hours <= 0:
+                        print("❌ --hours must be a positive number")
+                        return
+                except ValueError:
+                    print(f"❌ Invalid --hours value: {sys.argv[idx + 1]}")
+                    return
         
         if "--all" in sys.argv:
             all_repos = True
