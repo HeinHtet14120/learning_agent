@@ -454,17 +454,29 @@ echo "learning-agent analyze --all" >> ~/bin/end-of-day.sh
 
 - Python 3.7+
 - Git
-- Anthropic API key
-- Notion account (optional)
+- Anthropic API key (API version only; local edition needs nothing)
+- Notion account (optional, API version only)
 - Multiple project directories (recommended)
+
+## Local Edition (No API Required)
+
+The **Local Edition** (`learning-agent-local.py`) works 100% offline with powerful features:
+
+- **Concept-aware analysis** — maps your code to learning concepts (classes, async/await, decorators, etc.)
+- **Per-language journey tracking** — persistent progress with mastery stages (Introduced -> Practicing -> Mastered)
+- **Code snippet extraction** — real examples from your diff for each concept
+- **Intelligent next steps** — concept-graph-based suggestions, not generic advice
+- **Git diff analysis** — reads actual code changes, not just commit messages
+- **Supports:** Python, TypeScript, JavaScript, React Native (~10-16 concepts each)
+
+See [README-LOCAL.md](README-LOCAL.md) for full details.
 
 ## What's Next?
 
 Future improvements coming:
-- Code diff analysis (actual code changes, not just commits)
-- Learning streaks & gamification
 - Weekly automated reports
 - Smart reminders for concept review
+- More languages in the concept map
 - And more!
 
 ---

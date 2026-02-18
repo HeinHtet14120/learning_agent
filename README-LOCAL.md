@@ -50,142 +50,114 @@ learning-agent-local analyze
 
 ## 📊 What It Analyzes
 
-The agent uses **smart pattern recognition** to analyze:
+The agent reads your **actual code changes** (not just commit messages) to analyze:
 
-### 1. What You Learned/Built
-- Extracts from commit messages
-- Identifies features, components, fixes
-- Categorizes your work
+### 1. Progress & Trends
+- Coding streak tracking across sessions
+- Language trends from recent notes
+- Volume comparison with your average
 
-### 2. Components & Features
-- Detects React components, Python modules, etc.
-- Lists files you worked on
+### 2. Concepts Learned
+- Maps code changes to **learning concepts** (classes, async/await, error handling, etc.)
+- Shows difficulty level (Beginner / Intermediate / Advanced)
+- Includes real code snippets from your work
+- Supported languages: **Python, TypeScript, JavaScript, React Native**
+
+### 3. Code Examples
+- Extracts actual code snippets from your diff for each concept
+- Formatted with syntax highlighting
+
+### 4. Journey Progress
+- Tracks your level per language across sessions
+- Shows mastered, practicing, and newly introduced concepts
+- Suggests next milestone based on learning path gaps
+
+### 5. Components & Features
+- Detects functions, classes, React components from diff
+- Lists libraries integrated from imports
 - Shows what you created
 
-### 3. Bugs Fixed & Solutions
-- Finds all "fix", "bug", "issue" commits
-- Lists what you fixed today
-- Tracks your problem-solving
+### 6. Code Changes Summary
+- Lines added/deleted, file types changed
+- Functions created/removed, imports added
+- Config files modified
 
-### 4. Code Changes Summary
-- Lines added/deleted
-- Files modified
-- Type of work (new features vs refactoring)
+### 7. Technologies & Tools Used
+- Detected from actual imports in your diff
+- Cross-referenced with package.json, requirements.txt, etc.
 
-### 5. Technologies & Tools Used
-- Detects: React Native, Python, Node.js, etc.
-- Identifies APIs, databases, testing tools
-- Shows your tech stack
+### 8. Patterns & Best Practices
+- Identifies async/await, React Hooks, error handling, decorators, testing, etc.
+- Detected from actual code, not just commit messages
 
-### 6. Patterns & Best Practices
-- Identifies async/await usage
-- Detects testing practices
-- Notes refactoring efforts
-- TypeScript/type annotation usage
+### 9. Areas for Improvement
+- New functions without tests
+- Async without error handling
+- Dependency bloat warnings
+- Commit message quality
 
-### 7. Areas for Improvement
-- Checks commit message quality
-- Suggests adding tests
-- Language-specific tips
-- General best practices
-
-### 8. Next Learning Goals
-- Suggests what to learn next
-- Recommends practice projects
-- Gives language-specific goals
+### 10. Next Steps
+- **Concept-graph-based** suggestions for what to learn next
+- Based on what you coded today, suggests the logical next topics
+- Deduplicates against concepts you've already practiced
 
 ## 📝 Example Output
 
 ```
-🔍 Analyzing your activity from the last 24 hours...
-
-📁 Scanning: /Users/heinhtet/projects
-✅ Found 2 repositories
-
-============================================================
-📊 ACTIVITY SUMMARY
-============================================================
-
-✅ Repositories with activity: 2
-📝 Total commits: 12
-📈 Total changes: +487 -123
-
-📚 react-native-todo-app
-   └─ 8 commits | React Native | learning
-
-💼 returning-ai
-   └─ 4 commits | Python | work
-
-============================================================
-
-Analyzing 1/2: react-native-todo-app
-============================================================
-
 📖 LEARNING ANALYSIS
 ------------------------------------------------------------
 
-## What You Learned Today
+## Concepts Learned
 
-Today's React Native learning session covered:
-• Implement custom drawer navigation
-• Add user authentication flow
-• Fix navigation params issue
-• Create reusable button component
+### Object-Oriented Programming (Intermediate)
+Building classes with __init__, methods, inheritance, and encapsulation.
+  ```python
+  class LocalLearningAgent:
+      def __init__(self):
+          self.config_dir = Path.home() / ".learning-agent-local"
+  ```
 
-## Components & Features
+### File I/O & JSON (Intermediate)
+Reading and writing files, working with JSON, CSV, and pathlib.
 
-React components: DrawerNavigator.jsx, LoginScreen.jsx, Button.jsx
-• Create reusable button component
-• Add user authentication flow
+### Error Handling (Intermediate)
+Using try/except/finally blocks and raising custom exceptions.
 
-## Bugs Fixed & Solutions
+## Code Examples
 
-Today's bug fixes:
-• Fix navigation params not passing correctly
-• Resolve AsyncStorage initialization error
+**Object-Oriented Programming:**
+  ```python
+  class LocalLearningAgent:
+      def __init__(self):
+          self.config_dir = Path.home() / ".learning-agent-local"
+  ```
 
-## Code Changes Summary
+## Journey Progress
 
-Modified 12 files with 245 additions and 67 deletions.
+Level: Intermediate (8 concepts across 3 sessions)
+Mastered: variables, functions
+Practicing: classes, file I/O
+New today: error handling
+Next milestone (Advanced): Decorators, Generators
 
-Primarily adding new functionality and features.
+## Next Steps
 
-## Technologies & Tools Used
-
-React Native, React, JavaScript, API, Testing
-
-## Patterns & Best Practices
-
-• Using asynchronous programming patterns
-• Building reusable component architecture
-• Writing tests for code reliability
-
-## Areas for Improvement
-
-• Consider adding tests for new features and bug fixes
-• Write more descriptive commit messages explaining 'why' not just 'what'
-
-## Next Learning Goals
-
-• Continue deepening React Native knowledge with more complex examples
-• Build a small project to apply what you've learned
-• Explore React Native performance optimization techniques
-
-📝 Saved to: ~/.learning-agent-local/notes/2026-02-16_react-native-todo-app_React-Native_learning.md
-
-============================================================
+Based on today's work:
+• Decorators — Functions that wrap other functions to extend behavior.
+• Type Hints — Annotating function signatures for clarity.
+• Context Managers — Using 'with' statements for resource management.
 ```
 
 ## 🎯 How It Works (No AI Magic!)
 
-The local agent uses **smart pattern matching**:
+The local agent uses **smart pattern matching and concept mapping**:
 
-1. **Reads your git commits** - Messages, file changes, stats
-2. **Pattern recognition** - Looks for keywords like "fix", "feature", "bug"
-3. **Code analysis** - Analyzes file types, changes, additions/deletions
-4. **Smart categorization** - Learning vs work, by language
-5. **Generates insights** - Based on patterns in your commits
-6. **Creates notes** - Structured markdown files
+1. **Reads your git diff** - Actual added/removed lines, not just commit messages
+2. **Concept extraction** - Maps code patterns to learning concepts (classes, async, decorators, etc.)
+3. **Code snippet capture** - Extracts real examples from your changes
+4. **Journey tracking** - Persistent per-language progress across sessions
+5. **Smart next steps** - Suggests follow-up concepts based on a learning graph
+6. **Creates notes** - Structured markdown + journey files
 
 **No API calls. No network. Just smart local analysis!**
 
@@ -193,11 +165,15 @@ The local agent uses **smart pattern matching**:
 
 ```
 ~/.learning-agent-local/
-├── config.json          # Your settings
-└── notes/              # All your learning notes
-    ├── 2026-02-16_project1_ReactNative_learning.md
-    ├── 2026-02-16_project2_Python_work.md
-    └── ...
+└── config.json              # Your settings
+
+<project-root>/notes/        # All generated files
+├── 2026-02-17_myapp_Python_learning.md     # Daily notes
+├── journey-python.json      # Journey data (persistent)
+├── journey-python.md        # Journey summary (human-readable)
+├── journey-typescript.json
+├── journey-typescript.md
+└── ...
 ```
 
 ## 💡 Usage Examples
@@ -221,28 +197,40 @@ learning-agent-local analyze --all --hours 168
 
 ## 🎨 Features
 
+### ✅ Concept-Aware Analysis
+- Maps your code changes to **learning concepts** (not just function names)
+- Shows difficulty level, description, and real code snippets
+- Supported: Python, TypeScript, JavaScript, React Native (~10-16 concepts each)
+
+### ✅ Per-Language Journey Tracking
+- Persistent progress across sessions
+- Mastery stages: Introduced -> Practicing -> Mastered
+- Concept tracker table and session log
+- Journey files in `notes/journey-{language}.md`
+
+### ✅ Intelligent Next Steps
+- Suggests concepts based on your **learning graph**, not generic advice
+- Deduplicates against what you've already practiced
+- Follows a structured learning path per language
+
+### ✅ Git Diff Analysis
+- Reads actual code changes (imports, functions, patterns)
+- Extracts code snippets for each concept
+- Detects frameworks from real imports
+
 ### ✅ Multi-Project Support
 - Scan all your repos at once
 - See your entire day's work
-- Cross-project insights
+- Journey tracking works across all repos
 
 ### ✅ Smart Classification
 - Auto-detects learning vs work
-- Identifies programming languages
+- Identifies all programming languages
 - Categorizes by activity type
-
-### ✅ Detailed Analysis
-- What you learned
-- Bugs you fixed
-- Code statistics
-- Technologies used
-- Improvement suggestions
-- Next learning goals
 
 ### ✅ Local Storage
 - All notes saved as markdown
-- Easy to read and search
-- No database needed
+- Journey data in JSON (machine-readable) + MD (human-readable)
 - Version control friendly
 
 ## 🔧 Configuration
@@ -364,34 +352,31 @@ learning-agent-local analyze --hours 48
 ## 📚 What You Get
 
 Every analysis includes:
-- ✅ Summary of what you learned/built
+- ✅ **Concepts Learned** — with difficulty level, description, and code snippets
+- ✅ **Code Examples** — real snippets from your changes
+- ✅ **Journey Progress** — level, mastered/practicing concepts, next milestone
 - ✅ Components and features created
-- ✅ Bugs fixed with solutions
 - ✅ Code change statistics
-- ✅ Technologies used
-- ✅ Patterns and best practices
-- ✅ Areas for improvement
-- ✅ Next learning goals
+- ✅ Technologies used (from actual imports)
+- ✅ Patterns and best practices (from actual code)
+- ✅ Areas for improvement (diff-aware)
+- ✅ **Intelligent Next Steps** — concept-graph-based suggestions
 
-All in nice markdown files you can:
-- Read anytime
-- Search easily
-- Version control
-- Share with team
+Plus persistent journey files per language:
+- `journey-python.md` — human-readable progress summary
+- `journey-python.json` — structured data for tracking
 
 ## 🎉 Perfect For
 
-- Developers who code 24/7
-- Learning multiple technologies
-- Working on many projects
-- Want to track progress
-- Need offline tools
-- Value privacy
+- Developers learning new languages and wanting to track concept mastery
+- Working on many projects and wanting a unified learning journey
+- Anyone who wants intelligent, concept-aware study notes from their code
+- Need offline tools that respect privacy
 - Don't want API costs
 - Have strict company policies (no external APIs!)
 
 ---
 
-**Track your learning. No API keys. No CEO scolding. 😄**
+**Track your learning journey. See real progress. No API keys needed. 😄**
 
 **Made with ❤️ for developers who want privacy and freedom!**
