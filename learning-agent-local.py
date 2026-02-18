@@ -15,6 +15,374 @@ from pathlib import Path
 from collections import Counter
 import re
 
+CONCEPT_MAP = {
+    "Python": {
+        "concepts": {
+            "variables": {
+                "name": "Variables & Data Types",
+                "triggers": {"patterns": [], "imports": [], "code_re": [r"^\w+\s*=\s*.+"]},
+                "level": 0,
+                "description": "Assigning values to variables and working with basic data types.",
+                "next": ["control_flow", "functions"],
+            },
+            "data_types": {
+                "name": "Data Structures",
+                "triggers": {"patterns": [], "imports": [], "code_re": [r"\bdict\b|\blist\b|\bset\b|\btuple\b|\{\s*['\"]"]},
+                "level": 0,
+                "description": "Using Python's built-in data structures: lists, dicts, sets, tuples.",
+                "next": ["list_comprehension", "functions"],
+            },
+            "control_flow": {
+                "name": "Control Flow",
+                "triggers": {"patterns": [], "imports": [], "code_re": [r"^\s*(?:if |elif |else:|for |while )"]},
+                "level": 0,
+                "description": "Branching and looping with if/elif/else, for, and while.",
+                "next": ["functions", "error_handling"],
+            },
+            "functions": {
+                "name": "Functions",
+                "triggers": {"patterns": [], "imports": [], "code_re": [r"^def \w+\("]},
+                "level": 0,
+                "description": "Defining reusable functions with parameters and return values.",
+                "next": ["oop_classes", "type_hints"],
+            },
+            "oop_classes": {
+                "name": "Object-Oriented Programming",
+                "triggers": {"patterns": [], "imports": [], "code_re": [r"^class \w+", r"self\.\w+"]},
+                "level": 1,
+                "description": "Building classes with __init__, methods, inheritance, and encapsulation.",
+                "next": ["decorators", "dataclasses"],
+            },
+            "error_handling": {
+                "name": "Error Handling",
+                "triggers": {"patterns": ["error handling"], "imports": [], "code_re": [r"^\s*(?:try:|except |raise )"]},
+                "level": 1,
+                "description": "Using try/except/finally blocks and raising custom exceptions.",
+                "next": ["context_managers", "testing"],
+            },
+            "file_io": {
+                "name": "File I/O & JSON",
+                "triggers": {"patterns": [], "imports": ["json", "csv", "pathlib"], "code_re": [r"open\(", r"json\.(load|dump)", r"Path\("]},
+                "level": 1,
+                "description": "Reading and writing files, working with JSON, CSV, and pathlib.",
+                "next": ["error_handling", "context_managers"],
+            },
+            "type_hints": {
+                "name": "Type Hints",
+                "triggers": {"patterns": ["TypeScript types"], "imports": ["typing"], "code_re": [r":\s*(?:str|int|float|bool|list|dict|Optional|Union|List|Dict)"]},
+                "level": 1,
+                "description": "Annotating function signatures and variables with type hints.",
+                "next": ["dataclasses", "testing"],
+            },
+            "list_comprehension": {
+                "name": "Comprehensions",
+                "triggers": {"patterns": ["functional patterns"], "imports": [], "code_re": [r"\[.+\bfor\b.+\bin\b.+\]"]},
+                "level": 1,
+                "description": "Using list, dict, and set comprehensions for concise data transformations.",
+                "next": ["generators", "functional_patterns"],
+            },
+            "testing": {
+                "name": "Testing",
+                "triggers": {"patterns": ["testing"], "imports": ["pytest", "unittest"], "code_re": [r"(?:def test_|assert |pytest\.|unittest\.)"]},
+                "level": 1,
+                "description": "Writing unit tests with pytest or unittest for code reliability.",
+                "next": ["decorators", "functional_patterns"],
+            },
+            "decorators": {
+                "name": "Decorators",
+                "triggers": {"patterns": ["decorators"], "imports": ["functools"], "code_re": [r"^@\w+"]},
+                "level": 2,
+                "description": "Functions that wrap other functions to extend behavior without modification.",
+                "next": ["context_managers", "generators"],
+            },
+            "async_await": {
+                "name": "Async/Await",
+                "triggers": {"patterns": ["async/await"], "imports": ["asyncio", "aiohttp"], "code_re": [r"^async def ", r"await "]},
+                "level": 2,
+                "description": "Asynchronous programming with async/await and the asyncio event loop.",
+                "next": ["generators", "functional_patterns"],
+            },
+            "functional_patterns": {
+                "name": "Functional Patterns",
+                "triggers": {"patterns": ["functional patterns"], "imports": ["functools", "itertools"], "code_re": [r"\bmap\(|\bfilter\(|\breduce\(|\blambda "]},
+                "level": 2,
+                "description": "Using map, filter, reduce, lambda, and higher-order functions.",
+                "next": ["generators", "decorators"],
+            },
+            "context_managers": {
+                "name": "Context Managers",
+                "triggers": {"patterns": [], "imports": ["contextlib"], "code_re": [r"\bwith\b .+ as ", r"def __enter__", r"def __exit__"]},
+                "level": 2,
+                "description": "Using 'with' statements and building custom context managers.",
+                "next": ["async_await", "generators"],
+            },
+            "generators": {
+                "name": "Generators",
+                "triggers": {"patterns": [], "imports": [], "code_re": [r"\byield\b"]},
+                "level": 2,
+                "description": "Creating lazy iterators with yield for memory-efficient data processing.",
+                "next": ["async_await"],
+            },
+            "dataclasses": {
+                "name": "Dataclasses",
+                "triggers": {"patterns": [], "imports": ["dataclasses"], "code_re": [r"@dataclass"]},
+                "level": 2,
+                "description": "Using @dataclass to create clean data-holding classes with less boilerplate.",
+                "next": ["type_hints", "testing"],
+            },
+        },
+        "learning_path": [
+            ["variables", "data_types", "control_flow", "functions"],
+            ["oop_classes", "error_handling", "file_io", "type_hints", "list_comprehension", "testing"],
+            ["decorators", "async_await", "functional_patterns", "context_managers", "generators", "dataclasses"],
+        ],
+    },
+    "TypeScript": {
+        "concepts": {
+            "ts_types": {
+                "name": "TypeScript Types",
+                "triggers": {"patterns": ["TypeScript types"], "imports": [], "code_re": [r":\s*(?:string|number|boolean|void)", r"\binterface\s+\w+", r"\btype\s+\w+\s*="]},
+                "level": 0,
+                "description": "Defining interfaces, type aliases, and basic type annotations.",
+                "next": ["generics", "ts_utility_types"],
+            },
+            "functions": {
+                "name": "Functions & Arrow Functions",
+                "triggers": {"patterns": [], "imports": [], "code_re": [r"(?:function|const\s+\w+\s*=\s*(?:async\s+)?\()"]},
+                "level": 0,
+                "description": "Defining functions with typed parameters, return types, and arrow syntax.",
+                "next": ["ts_types", "async_await"],
+            },
+            "react_hooks": {
+                "name": "React Hooks",
+                "triggers": {"patterns": ["React Hooks"], "imports": ["react"], "code_re": [r"use[A-Z]\w+\s*\("]},
+                "level": 1,
+                "description": "Using useState, useEffect, useRef, useMemo, and custom hooks.",
+                "next": ["state_management", "testing"],
+            },
+            "async_await": {
+                "name": "Async/Await & Promises",
+                "triggers": {"patterns": ["async/await"], "imports": [], "code_re": [r"\basync\b", r"\bawait\b", r"new Promise"]},
+                "level": 1,
+                "description": "Handling asynchronous operations with async/await and Promise chains.",
+                "next": ["error_handling", "express_routing"],
+            },
+            "state_management": {
+                "name": "State Management",
+                "triggers": {"patterns": [], "imports": ["redux", "@reduxjs/toolkit", "zustand", "recoil"], "code_re": [r"createSlice|createStore|useSelector|useDispatch"]},
+                "level": 1,
+                "description": "Managing application state with Redux, Zustand, or Context API.",
+                "next": ["react_hooks", "testing"],
+            },
+            "error_handling": {
+                "name": "Error Handling",
+                "triggers": {"patterns": ["error handling"], "imports": [], "code_re": [r"\btry\s*\{", r"\bcatch\s*\("]},
+                "level": 1,
+                "description": "Implementing try/catch blocks and custom error types for robust code.",
+                "next": ["testing", "async_await"],
+            },
+            "nextjs": {
+                "name": "Next.js Patterns",
+                "triggers": {"patterns": [], "imports": ["next", "next/router", "next/image", "next/link"], "code_re": [r"getServerSideProps|getStaticProps|useRouter"]},
+                "level": 1,
+                "description": "Using Next.js routing, SSR, SSG, and API routes.",
+                "next": ["express_routing", "testing"],
+            },
+            "express_routing": {
+                "name": "Express/API Routing",
+                "triggers": {"patterns": ["middleware"], "imports": ["express"], "code_re": [r"app\.(get|post|put|delete|use)\(", r"router\.(get|post|put|delete)\("]},
+                "level": 1,
+                "description": "Building REST APIs with Express routes, middleware, and request handling.",
+                "next": ["error_handling", "testing"],
+            },
+            "generics": {
+                "name": "Generics",
+                "triggers": {"patterns": [], "imports": [], "code_re": [r"<T(?:\s|>|,)", r"<T\s+extends\b"]},
+                "level": 2,
+                "description": "Writing reusable, type-safe code with generic type parameters.",
+                "next": ["ts_utility_types"],
+            },
+            "ts_utility_types": {
+                "name": "Utility Types",
+                "triggers": {"patterns": [], "imports": [], "code_re": [r"\b(?:Partial|Required|Pick|Omit|Record|Exclude|Extract)<"]},
+                "level": 2,
+                "description": "Using built-in utility types like Partial, Pick, Omit, and Record.",
+                "next": ["generics"],
+            },
+            "testing": {
+                "name": "Testing",
+                "triggers": {"patterns": ["testing"], "imports": ["jest", "vitest", "@testing-library"], "code_re": [r"\b(?:describe|it|test|expect)\s*\("]},
+                "level": 1,
+                "description": "Writing unit and integration tests with Jest, Vitest, or Testing Library.",
+                "next": ["error_handling"],
+            },
+        },
+        "learning_path": [
+            ["functions", "ts_types"],
+            ["react_hooks", "async_await", "state_management", "error_handling", "nextjs", "express_routing", "testing"],
+            ["generics", "ts_utility_types"],
+        ],
+    },
+    "JavaScript": {
+        "concepts": {
+            "variables": {
+                "name": "Variables & ES6",
+                "triggers": {"patterns": [], "imports": [], "code_re": [r"\b(?:const|let|var)\s+\w+\s*="]},
+                "level": 0,
+                "description": "Using const/let, template literals, destructuring, and spread operators.",
+                "next": ["functions", "dom"],
+            },
+            "functions": {
+                "name": "Functions & Arrow Functions",
+                "triggers": {"patterns": [], "imports": [], "code_re": [r"(?:function\s+\w+|=>\s*[\{(])"]},
+                "level": 0,
+                "description": "Defining functions with parameters, defaults, rest params, and arrow syntax.",
+                "next": ["closures", "async_await"],
+            },
+            "dom": {
+                "name": "DOM Manipulation",
+                "triggers": {"patterns": [], "imports": [], "code_re": [r"document\.(querySelector|getElementById|createElement)", r"\.addEventListener\("]},
+                "level": 0,
+                "description": "Selecting, modifying, and listening to events on DOM elements.",
+                "next": ["es6_features", "closures"],
+            },
+            "es6_features": {
+                "name": "ES6+ Features",
+                "triggers": {"patterns": [], "imports": [], "code_re": [r"\.\.\.\w+", r"\bclass\s+\w+", r"`[^`]*\$\{"]},
+                "level": 1,
+                "description": "Using classes, spread/rest, template literals, and modules.",
+                "next": ["promises", "closures"],
+            },
+            "closures": {
+                "name": "Closures & Scope",
+                "triggers": {"patterns": [], "imports": [], "code_re": [r"function\s*\(.*\)\s*\{[^}]*function", r"=>\s*\{[^}]*=>"]},
+                "level": 1,
+                "description": "Understanding lexical scope, closures, and higher-order functions.",
+                "next": ["functional_patterns", "promises"],
+            },
+            "promises": {
+                "name": "Promises",
+                "triggers": {"patterns": [], "imports": [], "code_re": [r"new Promise\(", r"\.then\(", r"Promise\.(all|race|allSettled)"]},
+                "level": 1,
+                "description": "Creating and chaining Promises for asynchronous operations.",
+                "next": ["async_await", "error_handling"],
+            },
+            "async_await": {
+                "name": "Async/Await",
+                "triggers": {"patterns": ["async/await"], "imports": [], "code_re": [r"\basync\b", r"\bawait\b"]},
+                "level": 1,
+                "description": "Writing clean asynchronous code with async functions and await.",
+                "next": ["error_handling", "testing"],
+            },
+            "error_handling": {
+                "name": "Error Handling",
+                "triggers": {"patterns": ["error handling"], "imports": [], "code_re": [r"\btry\s*\{", r"\bcatch\s*\("]},
+                "level": 1,
+                "description": "Implementing try/catch and custom error classes for robust code.",
+                "next": ["testing"],
+            },
+            "react_hooks": {
+                "name": "React Hooks",
+                "triggers": {"patterns": ["React Hooks"], "imports": ["react"], "code_re": [r"use[A-Z]\w+\s*\("]},
+                "level": 1,
+                "description": "Using useState, useEffect, useRef, useMemo, and custom hooks.",
+                "next": ["testing", "functional_patterns"],
+            },
+            "functional_patterns": {
+                "name": "Functional Patterns",
+                "triggers": {"patterns": ["functional patterns"], "imports": [], "code_re": [r"\.map\(|\.filter\(|\.reduce\("]},
+                "level": 2,
+                "description": "Using map, filter, reduce and composing functions for data transformation.",
+                "next": ["closures", "testing"],
+            },
+            "testing": {
+                "name": "Testing",
+                "triggers": {"patterns": ["testing"], "imports": ["jest", "vitest", "mocha"], "code_re": [r"\b(?:describe|it|test|expect)\s*\("]},
+                "level": 1,
+                "description": "Writing unit and integration tests with Jest, Vitest, or Mocha.",
+                "next": ["error_handling"],
+            },
+        },
+        "learning_path": [
+            ["variables", "functions", "dom"],
+            ["es6_features", "closures", "promises", "async_await", "error_handling", "react_hooks", "testing"],
+            ["functional_patterns"],
+        ],
+    },
+    "React Native": {
+        "concepts": {
+            "native_components": {
+                "name": "Core Components",
+                "triggers": {"patterns": [], "imports": ["react-native"], "code_re": [r"\b(?:View|Text|ScrollView|FlatList|TouchableOpacity|Image)\b"]},
+                "level": 0,
+                "description": "Using React Native core components: View, Text, ScrollView, FlatList.",
+                "next": ["navigation", "styling"],
+            },
+            "styling": {
+                "name": "StyleSheet & Styling",
+                "triggers": {"patterns": [], "imports": [], "code_re": [r"StyleSheet\.create\(", r"style=\{"]},
+                "level": 0,
+                "description": "Styling components with StyleSheet.create and inline styles.",
+                "next": ["animations", "platform_specific"],
+            },
+            "navigation": {
+                "name": "Navigation",
+                "triggers": {"patterns": [], "imports": ["@react-navigation"], "code_re": [r"createStackNavigator|createBottomTabNavigator|useNavigation\("]},
+                "level": 1,
+                "description": "Implementing screen navigation with React Navigation stack and tab navigators.",
+                "next": ["app_lifecycle", "async_storage"],
+            },
+            "expo": {
+                "name": "Expo",
+                "triggers": {"patterns": [], "imports": ["expo", "expo-camera", "expo-location", "expo-notifications"], "code_re": [r"expo\.\w+"]},
+                "level": 1,
+                "description": "Using Expo SDK for camera, location, notifications, and managed workflow.",
+                "next": ["native_modules"],
+            },
+            "platform_specific": {
+                "name": "Platform-Specific Code",
+                "triggers": {"patterns": [], "imports": [], "code_re": [r"Platform\.(OS|select)\b", r"\.ios\.|\.android\."]},
+                "level": 1,
+                "description": "Writing platform-specific code for iOS and Android differences.",
+                "next": ["native_modules"],
+            },
+            "animations": {
+                "name": "Animations",
+                "triggers": {"patterns": [], "imports": ["react-native-reanimated", "react-native-gesture-handler"], "code_re": [r"Animated\.\w+|useSharedValue|useAnimatedStyle"]},
+                "level": 2,
+                "description": "Creating animations with Animated API or Reanimated library.",
+                "next": ["native_modules"],
+            },
+            "async_storage": {
+                "name": "Local Storage",
+                "triggers": {"patterns": [], "imports": ["@react-native-async-storage"], "code_re": [r"AsyncStorage\.(get|set|remove)Item"]},
+                "level": 1,
+                "description": "Persisting data locally with AsyncStorage or similar storage solutions.",
+                "next": ["navigation", "app_lifecycle"],
+            },
+            "app_lifecycle": {
+                "name": "App Lifecycle",
+                "triggers": {"patterns": [], "imports": [], "code_re": [r"AppState\.(addEventListener|currentState)", r"useAppState"]},
+                "level": 1,
+                "description": "Handling app lifecycle events: foreground, background, and inactive states.",
+                "next": ["native_modules"],
+            },
+            "native_modules": {
+                "name": "Native Modules",
+                "triggers": {"patterns": [], "imports": [], "code_re": [r"NativeModules\.\w+", r"requireNativeComponent"]},
+                "level": 2,
+                "description": "Bridging native iOS/Android code with JavaScript through native modules.",
+                "next": [],
+            },
+        },
+        "learning_path": [
+            ["native_components", "styling"],
+            ["navigation", "expo", "platform_specific", "async_storage", "app_lifecycle"],
+            ["animations", "native_modules"],
+        ],
+    },
+}
+
 class LocalLearningAgent:
     def __init__(self):
         self.config_dir = Path.home() / ".learning-agent-local"
@@ -447,6 +815,112 @@ class LocalLearningAgent:
 
         return parsed
 
+    # ── Concept Extraction ───────────────────────────────────────
+
+    def _extract_concepts(self, diff_parsed, diff_text, language):
+        """Match diff signals against CONCEPT_MAP to identify learning concepts"""
+        lang_map = CONCEPT_MAP.get(language)
+        if not lang_map:
+            return []
+
+        concepts = lang_map["concepts"]
+        matched = []
+        added_lines = []
+
+        # Collect added lines from diff_text for regex matching
+        if diff_text:
+            for line in diff_text.split('\n'):
+                if line.startswith('+') and not line.startswith('+++'):
+                    added_lines.append(line[1:])
+
+        patterns_detected = set(diff_parsed.get("patterns_detected", []))
+        imports_added = diff_parsed.get("imports_added", [])
+
+        # Extract module names from imports
+        import_modules = set()
+        for imp in imports_added:
+            # Python: from X import ... or import X
+            py_m = re.match(r'^(?:from\s+(\S+)|import\s+(\S+))', imp)
+            if py_m:
+                mod = (py_m.group(1) or py_m.group(2)).split('.')[0]
+                import_modules.add(mod)
+            # JS/TS: import ... from 'pkg' or require('pkg')
+            js_m = re.search(r'''(?:from\s+['"]|require\s*\(\s*['"])([^'"]+?)['"]''', imp)
+            if js_m:
+                import_modules.add(js_m.group(1).split('/')[0])
+
+        for key, concept in concepts.items():
+            triggers = concept["triggers"]
+            triggered = False
+
+            # 1. Check patterns_detected (cheapest)
+            for p in triggers.get("patterns", []):
+                if p in patterns_detected:
+                    triggered = True
+                    break
+
+            # 2. Check import modules
+            if not triggered:
+                for imp_trigger in triggers.get("imports", []):
+                    if imp_trigger in import_modules:
+                        triggered = True
+                        break
+
+            # 3. Check code regexes against added lines (most expensive)
+            if not triggered and triggers.get("code_re"):
+                for regex in triggers["code_re"]:
+                    for line in added_lines:
+                        if re.search(regex, line.strip()):
+                            triggered = True
+                            break
+                    if triggered:
+                        break
+
+            if triggered:
+                snippets = self._extract_code_snippets(added_lines, triggers.get("code_re", []))
+                matched.append({
+                    "key": key,
+                    "name": concept["name"],
+                    "level": concept["level"],
+                    "description": concept["description"],
+                    "next": concept.get("next", []),
+                    "snippets": snippets,
+                })
+
+        return matched
+
+    def _extract_code_snippets(self, added_lines, code_regexes):
+        """Extract 1-3 code snippets matching a concept's triggers from added lines"""
+        if not added_lines or not code_regexes:
+            return []
+
+        snippets = []
+        used_indices = set()
+
+        for regex in code_regexes:
+            for i, line in enumerate(added_lines):
+                if i in used_indices:
+                    continue
+                if re.search(regex, line.strip()):
+                    # Grab matched line + up to 4 surrounding added lines for context
+                    start = max(0, i - 1)
+                    end = min(len(added_lines), i + 4)
+                    snippet_lines = added_lines[start:end]
+                    # Remove completely blank leading/trailing lines
+                    while snippet_lines and not snippet_lines[0].strip():
+                        snippet_lines = snippet_lines[1:]
+                    while snippet_lines and not snippet_lines[-1].strip():
+                        snippet_lines = snippet_lines[:-1]
+                    if snippet_lines:
+                        snippets.append('\n'.join(snippet_lines[:5]))
+                        used_indices.update(range(start, end))
+                    if len(snippets) >= 3:
+                        return snippets
+            if len(snippets) >= 3:
+                break
+
+        return snippets
+
     # ── Multi-Language Detection ──────────────────────────────────
 
     def detect_languages(self, activity, diff_parsed=None):
@@ -737,7 +1211,7 @@ class LocalLearningAgent:
         else:
             return "mixed"
 
-    def analyze_local(self, activity, activity_type, lang_info, diff_parsed=None, recent_notes=None):
+    def analyze_local(self, activity, activity_type, lang_info, diff_parsed=None, recent_notes=None, diff_text=""):
         """Analyze activity using local pattern recognition"""
 
         commits = activity["commits"]
@@ -750,20 +1224,20 @@ class LocalLearningAgent:
         if diff_parsed is None:
             diff_parsed = {}
 
-        # Extract patterns
+        # Extract concepts from diff
+        concepts_learned = self._extract_concepts(diff_parsed, diff_text, language)
+
+        # Build sections in order
         analysis = {}
 
-        # 0. Progress & Trends (first section)
-        # Build partial metadata for trend analysis
+        # 1. Progress & Trends
         partial = {
-            "metadata": {
-                "stats": activity["stats"],
-            },
+            "metadata": {"stats": activity["stats"]},
             "sections": {}
         }
         analysis["Progress & Trends"] = self._analyze_progress_trends(partial, recent_notes or [])
 
-        # 1. What was built/learned
+        # 2. Concepts Learned (replaces "What You Learned Today")
         built_patterns = {
             "component": ["component", "create", "build", "implement", "add"],
             "feature": ["feature", "functionality", "capability"],
@@ -798,40 +1272,46 @@ class LocalLearningAgent:
                     detected_work.append(item)
 
         if activity_type == "learning":
-            analysis["What You Learned Today"] = self._generate_learning_summary(detected_work, language)
+            analysis["Concepts Learned"] = self._generate_learning_summary(detected_work, language, concepts_learned)
         else:
-            analysis["What You Accomplished Today"] = self._generate_work_summary(detected_work)
+            if concepts_learned:
+                analysis["Concepts Learned"] = self._generate_learning_summary(detected_work, language, concepts_learned)
+            else:
+                analysis["What You Accomplished Today"] = self._generate_work_summary(detected_work)
 
-        # 2. Components/Features
+        # 3. Code Examples (new — only if snippets exist)
+        code_examples = self._generate_code_examples_section(concepts_learned, language)
+        if code_examples:
+            analysis["Code Examples"] = code_examples
+
+        # 4. Journey Progress (new)
+        if concepts_learned:
+            analysis["Journey Progress"] = self._generate_journey_progress_section(language, concepts_learned)
+
+        # 5. Components & Features
         analysis["Components & Features"] = self._extract_components(messages, files_text, language, diff_parsed)
 
-        # 3. Bug fixes
-        bug_fixes = [msg for msg in messages if any(word in msg.lower() for word in ["fix", "bug", "issue", "error"])]
-        if bug_fixes:
-            analysis["Bugs Fixed & Solutions"] = self._format_bug_fixes(bug_fixes)
-        else:
-            analysis["Bugs Fixed & Solutions"] = "No bugs fixed today."
-
-        # 4. Code changes analysis
+        # 6. Code Changes Summary
         analysis["Code Changes Summary"] = self._analyze_code_changes(activity["stats"], files_text, messages, diff_parsed)
 
-        # 5. Technologies used
+        # 7. Technologies & Tools Used
         project_tech = self._detect_project_tech_stack(repo_path)
         analysis["Technologies & Tools Used"] = self._extract_technologies(messages, files_text, diff_parsed, project_tech)
 
-        # 6. Patterns observed
+        # 8. Patterns & Best Practices
         analysis["Patterns & Best Practices"] = self._identify_patterns(messages, files_text, language, diff_parsed)
 
-        # 7. Areas for improvement
+        # 9. Areas for Improvement
         analysis["Areas for Improvement"] = self._suggest_improvements(activity, language, activity_type, diff_parsed)
 
-        # 8. Next steps
-        analysis["Next Learning Goals"] = self._generate_next_steps(detected_work, language, activity_type)
+        # 10. Next Steps (concept-aware)
+        analysis["Next Steps"] = self._generate_next_steps(concepts_learned, language, activity_type, recent_notes)
 
         return {
             "activity_type": activity_type,
             "language": language,
             "languages": languages,
+            "concepts_learned": concepts_learned,
             "sections": analysis,
             "metadata": {
                 "repo": activity["repo_name"],
@@ -842,16 +1322,49 @@ class LocalLearningAgent:
             }
         }
 
-    def _generate_learning_summary(self, work_items, language):
-        """Generate learning summary"""
-        if not work_items:
-            return f"Continued learning {language} through various exercises and examples."
+    def _generate_learning_summary(self, work_items, language, concepts_learned):
+        """Generate concept-aware learning summary"""
+        level_labels = {0: "Beginner", 1: "Intermediate", 2: "Advanced"}
 
-        summary = f"Today's {language} learning session covered:\n"
-        summary += "\n".join(work_items[:8])
+        if not concepts_learned:
+            # Fallback to original behavior
+            if not work_items:
+                return f"Continued learning {language} through various exercises and examples."
+            summary = f"Today's {language} learning session covered:\n"
+            summary += "\n".join(work_items[:8])
+            if len(work_items) > 8:
+                summary += f"\n\n...and {len(work_items) - 8} more learning activities."
+            return summary
 
-        if len(work_items) > 8:
-            summary += f"\n\n...and {len(work_items) - 8} more learning activities."
+        parts = []
+        for concept in concepts_learned:
+            level = level_labels.get(concept["level"], "Intermediate")
+            header = f"### {concept['name']} ({level})"
+            desc = concept["description"]
+            snippet_block = ""
+            if concept.get("snippets"):
+                snippet = concept["snippets"][0]
+                lang_tag = language.lower().replace(" ", "").replace("reactnative", "jsx")
+                if lang_tag == "typescript":
+                    lang_tag = "typescript"
+                elif lang_tag == "javascript":
+                    lang_tag = "javascript"
+                elif lang_tag == "python":
+                    lang_tag = "python"
+                snippet_block = f"\n```{lang_tag}\n{snippet}\n```"
+            parts.append(f"{header}\n{desc}{snippet_block}")
+
+        summary = "\n\n".join(parts)
+
+        # Add remaining work items that don't map to concepts
+        concept_names = {c["name"].lower() for c in concepts_learned}
+        other_items = []
+        for item in work_items:
+            item_lower = item.lower()
+            if not any(cn in item_lower for cn in concept_names):
+                other_items.append(item)
+        if other_items:
+            summary += "\n\n### Other Activity\n" + "\n".join(other_items[:5])
 
         return summary
 
@@ -867,6 +1380,27 @@ class LocalLearningAgent:
             summary += f"\n\n...and {len(work_items) - 8} more tasks."
 
         return summary
+
+    def _generate_code_examples_section(self, concepts_learned, language):
+        """Format code snippets from matched concepts into a markdown section"""
+        if not concepts_learned:
+            return None
+
+        lang_tag = language.lower().replace(" ", "")
+        if lang_tag == "reactnative":
+            lang_tag = "jsx"
+
+        parts = []
+        for concept in concepts_learned:
+            if not concept.get("snippets"):
+                continue
+            for snippet in concept["snippets"][:2]:
+                parts.append(f"**{concept['name']}:**\n```{lang_tag}\n{snippet}\n```")
+
+        if not parts:
+            return None
+
+        return "\n\n".join(parts)
 
     def _extract_components(self, messages, files, language, diff_parsed=None):
         """Extract components and features from diff data and commit messages"""
@@ -1141,28 +1675,273 @@ class LocalLearningAgent:
 
         return "\n".join(suggestions[:5])
 
-    def _generate_next_steps(self, _work_items, language, activity_type):
-        """Generate next learning goals"""
+    def _parse_concepts_from_notes(self, recent_notes, language):
+        """Scan recent note content for concept names from CONCEPT_MAP, return set of seen concept keys"""
+        lang_map = CONCEPT_MAP.get(language)
+        if not lang_map or not recent_notes:
+            return set()
+
+        seen = set()
+        all_text = " ".join(n["content"].lower() for n in recent_notes)
+        for key, concept in lang_map["concepts"].items():
+            if concept["name"].lower() in all_text:
+                seen.add(key)
+        return seen
+
+    def _generate_next_steps(self, concepts_learned, language, activity_type, recent_notes=None):
+        """Generate concept-graph-based next step suggestions"""
+        lang_map = CONCEPT_MAP.get(language)
+
+        # Fallback if language not in CONCEPT_MAP
+        if not lang_map:
+            goals = []
+            if activity_type == "learning":
+                goals.append(f"• Continue deepening {language} knowledge with more complex examples")
+                goals.append("• Build a small project to apply what you've learned")
+            else:
+                goals.append("• Document any new patterns or solutions discovered today")
+                goals.append("• Review code for potential refactoring opportunities")
+            return "\n".join(goals[:4])
+
+        concepts_map = lang_map["concepts"]
+        learning_path = lang_map["learning_path"]
+
+        # Concepts already seen in recent notes
+        seen_concepts = self._parse_concepts_from_notes(recent_notes or [], language)
+
+        # Add today's concepts to seen set
+        today_keys = {c["key"] for c in (concepts_learned or [])}
+        seen_concepts |= today_keys
+
+        # Collect 'next' topics from today's concepts
+        candidates = []
+        for concept in (concepts_learned or []):
+            for next_key in concept.get("next", []):
+                if next_key not in seen_concepts and next_key in concepts_map:
+                    candidates.append(next_key)
+
+        # If no concepts matched today, suggest fundamentals from learning_path not yet seen
+        if not candidates:
+            for level_group in learning_path:
+                for key in level_group:
+                    if key not in seen_concepts and key in concepts_map:
+                        candidates.append(key)
+                if candidates:
+                    break
+
+        # Deduplicate while preserving order
+        seen_candidates = set()
+        unique_candidates = []
+        for c in candidates:
+            if c not in seen_candidates:
+                seen_candidates.add(c)
+                unique_candidates.append(c)
+
+        # Sort by learning_path position (suggest same level or one level up)
+        def path_position(key):
+            for level_idx, group in enumerate(learning_path):
+                if key in group:
+                    return level_idx
+            return 99
+
+        unique_candidates.sort(key=path_position)
+
         goals = []
-
-        if activity_type == "learning":
-            goals.append(f"• Continue deepening {language} knowledge with more complex examples")
-            goals.append("• Build a small project to apply what you've learned")
-            goals.append("• Review and refactor today's code with fresh eyes")
+        if unique_candidates:
+            intro = "Based on today's work" if concepts_learned else "Suggested next topics"
+            goals.append(f"{intro}:")
+            for key in unique_candidates[:4]:
+                concept = concepts_map[key]
+                goals.append(f"• **{concept['name']}** — {concept['description']}")
         else:
-            goals.append("• Document any new patterns or solutions discovered today")
-            goals.append("• Review code for potential refactoring opportunities")
-            goals.append("• Consider edge cases and error handling for today's changes")
+            goals.append(f"• Keep practicing {language} — you've covered the fundamentals well!")
+            goals.append("• Try building a project that combines multiple concepts")
 
-        # Language-specific goals
-        if language == "TypeScript":
-            goals.append("• Explore advanced TypeScript patterns (generics, utility types)")
-        elif language == "Python":
-            goals.append("• Study Python design patterns and best practices")
-        elif language == "JavaScript":
-            goals.append("• Consider migrating to TypeScript for better type safety")
+        return "\n".join(goals[:5])
 
-        return "\n".join(goals[:4])
+    # ── Per-Language Journey Tracking ────────────────────────────
+
+    def _load_journey(self, language):
+        """Load journey JSON for a language, or return empty default"""
+        lang_safe = language.lower().replace(" ", "-").replace("/", "-")
+        filepath = self.notes_dir / f"journey-{lang_safe}.json"
+        if filepath.exists():
+            try:
+                with open(filepath, 'r') as f:
+                    return json.load(f)
+            except (json.JSONDecodeError, OSError):
+                pass
+        return {
+            "language": language,
+            "sessions": [],
+            "concept_tracker": {},
+        }
+
+    def _save_journey(self, language, data):
+        """Write journey JSON and regenerate the markdown summary"""
+        self.notes_dir.mkdir(exist_ok=True)
+        lang_safe = language.lower().replace(" ", "-").replace("/", "-")
+
+        json_path = self.notes_dir / f"journey-{lang_safe}.json"
+        with open(json_path, 'w') as f:
+            json.dump(data, f, indent=2)
+
+        md_path = self.notes_dir / f"journey-{lang_safe}.md"
+        with open(md_path, 'w') as f:
+            f.write(self._render_journey_markdown(data))
+
+    def _update_journey(self, language, concepts_learned, repo, commits_count):
+        """Append session and update concept counters"""
+        data = self._load_journey(language)
+        date_str = datetime.now().strftime("%Y-%m-%d")
+        concept_keys = [c["key"] for c in concepts_learned]
+
+        # Append session
+        data["sessions"].append({
+            "date": date_str,
+            "repo": repo,
+            "concepts": concept_keys,
+            "commits": commits_count,
+        })
+
+        # Update concept tracker
+        for c in concepts_learned:
+            key = c["key"]
+            if key not in data["concept_tracker"]:
+                data["concept_tracker"][key] = {
+                    "name": c["name"],
+                    "level": c["level"],
+                    "times_seen": 0,
+                    "first_seen": date_str,
+                    "last_seen": date_str,
+                }
+            data["concept_tracker"][key]["times_seen"] += 1
+            data["concept_tracker"][key]["last_seen"] = date_str
+
+        self._save_journey(language, data)
+
+    def _get_mastery_status(self, times_seen):
+        """Return mastery status based on how many times a concept has been seen"""
+        if times_seen >= 3:
+            return "Mastered"
+        elif times_seen == 2:
+            return "Practicing"
+        else:
+            return "Introduced"
+
+    def _render_journey_markdown(self, data):
+        """Render journey JSON into a formatted markdown document"""
+        language = data["language"]
+        sessions = data.get("sessions", [])
+        tracker = data.get("concept_tracker", {})
+
+        lines = [f"# {language} Learning Journey\n"]
+
+        # Summary
+        total_sessions = len(sessions)
+        total_concepts = len(tracker)
+
+        mastered = [k for k, v in tracker.items() if v["times_seen"] >= 3]
+        practicing = [k for k, v in tracker.items() if v["times_seen"] == 2]
+        introduced = [k for k, v in tracker.items() if v["times_seen"] == 1]
+
+        # Determine level from highest concept level seen
+        max_level = 0
+        for v in tracker.values():
+            if v.get("level", 0) > max_level:
+                max_level = v.get("level", 0)
+        level_labels = {0: "Beginner", 1: "Intermediate", 2: "Advanced"}
+        level_str = level_labels.get(max_level, "Beginner")
+
+        lines.append(f"**Sessions:** {total_sessions}")
+        lines.append(f"**Level:** {level_str}")
+        lines.append(f"**Concepts tracked:** {total_concepts}\n")
+
+        if mastered:
+            names = [tracker[k].get("name", k) for k in mastered]
+            lines.append(f"**Mastered:** {', '.join(names)}")
+        if practicing:
+            names = [tracker[k].get("name", k) for k in practicing]
+            lines.append(f"**Practicing:** {', '.join(names)}")
+        if introduced:
+            names = [tracker[k].get("name", k) for k in introduced]
+            lines.append(f"**Introduced:** {', '.join(names)}")
+
+        lines.append("")
+
+        # Concept tracker table
+        if tracker:
+            lines.append("## Concept Tracker\n")
+            lines.append("| Concept | Level | Times Seen | Status |")
+            lines.append("|---------|-------|------------|--------|")
+            level_names = {0: "Beginner", 1: "Intermediate", 2: "Advanced"}
+            for key, info in sorted(tracker.items(), key=lambda x: (-x[1].get("level", 0), x[0])):
+                name = info.get("name", key)
+                lvl = level_names.get(info.get("level", 0), "?")
+                times = info["times_seen"]
+                status = self._get_mastery_status(times)
+                lines.append(f"| {name} | {lvl} | {times} | {status} |")
+            lines.append("")
+
+        # Session log (last 20)
+        if sessions:
+            lines.append("## Session Log\n")
+            for session in reversed(sessions[-20:]):
+                concepts_str = ", ".join(session.get("concepts", [])) or "general"
+                lines.append(f"- **{session['date']}** — {session['repo']} ({session['commits']} commits) — {concepts_str}")
+            lines.append("")
+
+        lines.append("---\n*Generated by Learning Agent*\n")
+        return "\n".join(lines)
+
+    def _generate_journey_progress_section(self, language, concepts_learned):
+        """Generate a journey progress section for the daily note"""
+        data = self._load_journey(language)
+        tracker = data.get("concept_tracker", {})
+        sessions = data.get("sessions", [])
+
+        level_labels = {0: "Beginner", 1: "Intermediate", 2: "Advanced"}
+
+        # Determine current level
+        max_level = 0
+        for v in tracker.values():
+            if v.get("level", 0) > max_level:
+                max_level = v.get("level", 0)
+        level_str = level_labels.get(max_level, "Beginner")
+
+        total_concepts = len(tracker)
+        total_sessions = len(sessions) + 1  # +1 for current session (not yet saved)
+
+        mastered = [tracker[k].get("name", k) for k, v in tracker.items() if v["times_seen"] >= 3]
+        practicing = [tracker[k].get("name", k) for k, v in tracker.items() if v["times_seen"] == 2]
+        new_today = [c["name"] for c in concepts_learned if c["key"] not in tracker]
+
+        parts = []
+        parts.append(f"**Level:** {level_str} ({total_concepts} concepts across {total_sessions} sessions)")
+
+        if mastered:
+            parts.append(f"**Mastered:** {', '.join(mastered)}")
+        if practicing:
+            parts.append(f"**Practicing:** {', '.join(practicing)}")
+        if new_today:
+            parts.append(f"**New today:** {', '.join(new_today)}")
+
+        # Next milestone: find gaps in learning_path
+        lang_map = CONCEPT_MAP.get(language)
+        if lang_map:
+            all_seen = set(tracker.keys()) | {c["key"] for c in concepts_learned}
+            for level_idx, group in enumerate(lang_map["learning_path"]):
+                missing = [k for k in group if k not in all_seen and k in lang_map["concepts"]]
+                if missing:
+                    missing_names = [lang_map["concepts"][k]["name"] for k in missing[:3]]
+                    lvl_name = level_labels.get(level_idx, "?")
+                    parts.append(f"**Next milestone ({lvl_name}):** {', '.join(missing_names)}")
+                    break
+
+        if not parts:
+            return "Starting your learning journey!"
+
+        return "\n".join(parts)
 
     def save_to_markdown(self, analysis):
         """Save analysis to markdown file"""
@@ -1197,6 +1976,19 @@ class LocalLearningAgent:
             f.write(content)
 
         print(f"📝 Saved to: {filepath}")
+
+        # Update per-language journey tracker
+        concepts_learned = analysis.get("concepts_learned", [])
+        if concepts_learned:
+            self._update_journey(
+                analysis["language"],
+                concepts_learned,
+                analysis["metadata"]["repo"],
+                analysis["metadata"]["commits_count"],
+            )
+            lang_safe = analysis["language"].lower().replace(" ", "-").replace("/", "-")
+            print(f"📊 Journey updated: notes/journey-{lang_safe}.md")
+
         return filepath
 
     def analyze(self, hours=24, all_repos=False):
@@ -1253,6 +2045,7 @@ class LocalLearningAgent:
             lang_info = self.detect_languages(activity, diff_parsed)
 
             # Store parsed data on the activity for later use
+            activity["_diff_text"] = diff_text
             activity["_diff_parsed"] = diff_parsed
             activity["_lang_info"] = lang_info
 
@@ -1272,10 +2065,11 @@ class LocalLearningAgent:
                 print('=' * 60 + "\n")
 
             activity_type = self.classify_activity(activity)
+            diff_text = activity.get("_diff_text", "")
             diff_parsed = activity.get("_diff_parsed", {})
             lang_info = activity.get("_lang_info", {"language": "Unknown", "languages": ["Unknown"]})
 
-            analysis = self.analyze_local(activity, activity_type, lang_info, diff_parsed, recent_notes)
+            analysis = self.analyze_local(activity, activity_type, lang_info, diff_parsed, recent_notes, diff_text)
 
             print("📖 LEARNING ANALYSIS")
             print("-" * 60 + "\n")
